@@ -4,8 +4,10 @@
 
 Este é um site informativo sobre ansiedade, seus sintomas, dicas para melhorar e recursos adicionais para quem busca apoio.
 
-## O que você encontrará aqui:
+**Link do Projeto:**  https://calmamente-website.vercel.app/
 
+## O que você encontrará aqui:
+ 
 * **Informações sobre Ansiedade:** Uma breve explicação sobre o que é ansiedade, ansiedade generalizada, transtorno de pânico e fobias.
 * **Sintomas da Ansiedade:** Listas de sintomas físicos e mentais comuns da ansiedade.
 * **Dicas para Melhorar a Ansiedade:** Sugestões práticas para lidar com a ansiedade no dia a dia.

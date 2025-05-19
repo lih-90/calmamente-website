@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalmaMente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .chatbot-button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+        }
+        .chatbot-button:hover {
+            background-color: #222;
+        }
+        .chatbot-window {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            height: 400px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #ccc;
+        }
+        .chatbot-header {
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+        }
+        .chatbot-messages {
+            padding: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chatbot-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+        .chatbot-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .chatbot-send-button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chatbot-send-button:hover {
+            background-color: #222;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #e0e0e0;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-blue-100">
+    <header class="bg-blue-600 text-white py-4 text-center rounded-b-md shadow-md">
+        <h1 class="text-2xl font-semibold">CalmaMente</h1>
+        <p class="text-md">Um espaço de apoio à sua saúde mental.</p>
+         <div class="mt-2 flex justify-center">
+            <span class="inline-block bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">☀️</span>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-8 p-4">
+        <section class="mb-8 p-6 bg-white rounded-md shadow-md">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">O que é Ansiedade?</h2>
+            <p class="text-gray-700">
+                A ansiedade é uma reação normal ao estresse, mas pode se tornar um transtorno quando os sentimentos excessivos de medo, preocupação e apreensão interferem nas atividades diárias.  A ansiedade generalizada é caracterizada por preocupação excessiva e persistente sobre diversos aspectos da vida. O transtorno de pânico envolve episódios súbitos de medo intenso, acompanhados de sintomas físicos. Fobias são medos intensos e irracionais de objetos ou situações específicas.
+            </p>
+            <p class="text-gray-700 mt-4">
+                Fonte: <a href="https://www.who.int/news-room/fact-sheets/detail/anxiety-disorders" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Organização Mundial da Saúde (OMS)</a>
+            </p>
+        </section>
+
+        <section class="mb-8 p-6 bg-white rounded-md shadow-md">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">Sintomas da Ansiedade</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Sintomas Físicos:</h3>
+                    <ul class="list-disc list-inside text-gray-700">
+                        <li>Palpitações</li>
+                        <li>Falta de ar</li>
+                        <li>Tensão muscular</li>
+                        <li>Sudorese</li>
+                        <li>Dor de cabeça</li>
+                        <li>Fadiga</li>
+                        <li>Problemas gastrointestinais</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Sintomas Mentais:</h3>
+                    <ul class="list-disc list-inside text-gray-700">
+                        <li>Preocupação excessiva</li>
+                        <li>Irritabilidade</li>
+                        <li>Dificuldade de concentração</li>
+                        <li>Medo irracional</li>
+                        <li>Sensação de estar "no limite"</li>
+                        <li>Dificuldade para relaxar</li>
+                        <li>Pensamentos acelerados</li>
+                    </ul>
+                </div>
+            </div>
+             <p class="text-gray-700 mt-4">
+                Fonte: <a href="https://www.mayoclinic.org/diseases-conditions/generalized-anxiety-disorder/symptoms-causes/syc-20360803" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Cleveland Clinic</a>
+            </p>
+        </section>
+
+        <section class="mb-8 p-6 bg-white rounded-md shadow-md">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">Dicas para Melhorar a Ansiedade</h2>
+            <ul class="list-disc list-inside space-y-3 text-gray-700">
+                <li><span class="font-semibold">Pratique técnicas de relaxamento:</span> Meditação, respiração diafragmática e yoga podem ajudar a acalmar a mente e o corpo.</li>
+                <li><span class="font-semibold">Cuide do seu bem-estar:</span> Durma bem, alimente-se de forma saudável e pratique exercícios físicos regularmente.</li>
+                <li><span class="font-semibold">Busque atividades que lhe deem prazer:</span> Hobbies, atividades criativas e momentos de lazer podem reduzir o estresse.</li>
+                 <li><span class="font-semibold">Evite o consumo excessivo de álcool e cafeína:</span> Essas substâncias podem desencadear ou piorar a ansiedade.</li>
+                <li><span class="font-semibold">Converse com alguém de confiança:</span> Compartilhar seus sentimentos pode aliviar a tensão.</li>
+                <li><span class="font-semibold">Procure ajuda profissional:</span> Se a ansiedade estiver prejudicando seu dia a dia, um psicólogo ou psiquiatra pode te ajudar.</li>
+            </ul>
+            <p class="text-gray-700 mt-4">
+                Fonte: <a href="https://www.mayoclinic.org/diseases-conditions/anxiety/diagnosis-treatment/drc-20319394" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Mayo Clinic</a>
+            </p>
+        </section>
+
+        <section class="mb-8 p-6 bg-white rounded-md shadow-md">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">Recursos Adicionais</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-700">
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Canais de Ajuda:</h3>
+                    <ul class="list-disc list-inside">
+                        <li><a href="https://www.cvv.org.br/" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">CVV (Centro de Valorização da Vida)</a></li>
+                        <li><a href="https://www.saude.gov.br/saude-mental" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Ministério da Saúde</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Livros:</h3>
+                    <ul class="list-disc list-inside">
+                        <li>"O Corpo Fala", Pierre Weil e Roland Tompakow</li>
+                        <li>"Ansiedade: Como Enfrentar o Mal do Século", Augusto Cury</li>
+                        <li>"Vencendo a Ansiedade", Dr. Augusto Cury</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Aplicativos:</h3>
+                    <ul class="list-disc list-inside">
+                         <li><a href="https://www.calm.com/" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Calm</a></li>
+                        <li><a href="https://www.headspace.com/" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Headspace</a></li>
+                        <li><a href="https://insighttimer.com/" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Insight Timer</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black text-white py-4 text-center rounded-t-md shadow-md">
+        <p>© 2024 CalmaMente. Criado por Aline Ometto - Imersão IA Alura. Todos os direitos reservados.</p>
+        <p>Este site tem fins informativos e não substitui a avaliação de um profissional de saúde.</p>
+    </footer>
+
+    <div class="chatbot-container">
+        <button class="chatbot-button" id="chatbot-toggle">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-question"><path d="m21.13 2.87-8 8"/><path d="M9.17 15.23a7 7 0 1 0 9.3-9.3"/><path d="M15.5 9.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/><path d="M15 13a1 1 0 0 1-1 1 1 1 0 0 1-1-1v-2"/></svg>
+        </button>
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">
+                <span class="close-button" id="close-chatbot">&times;</span>
+                Chatbot CalmaMente
+            </div>
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="message bot-message">Olá! Sou o chatbot CalmaMente. Estou aqui para te ajudar com informações e dicas sobre ansiedade. Como você está se sentindo hoje?</div>
+            </div>
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbot-input" class="chatbot-input" placeholder="Digite sua mensagem...">
+                <button id="chatbot-send-button" class="chatbot-send-button">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        const chatbotWindow = document.getElementById('chatbot-window');
+        const closeChatbot = document.getElementById('close-chatbot');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotSendButton = document.getElementById('chatbot-send-button');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+
+        chatbotToggle.addEventListener('click', () => {
+            chatbotWindow.style.display = chatbotWindow.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        closeChatbot.addEventListener('click', () => {
+            chatbotWindow.style.display = 'none';
+        });
+
+        chatbotSendButton.addEventListener('click', () => {
+            const message = chatbotInput.value;
+            if (message.trim() === '') return;
+
+            chatbotMessages.innerHTML += `<div class="message user-message">${message}</div>`;
+            chatbotInput.value = '';
+
+            setTimeout(() => {
+                const response = getBotResponse(message);
+                chatbotMessages.innerHTML += `<div class="message bot-message">${response}</div>`;
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }, 500);
+        });
+
+        chatbotInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                chatbotSendButton.click();
+            }
+        });
+
+        function getBotResponse(message) {
+            message = message.toLowerCase();
+            if (message.includes('ansiedade')) {
+                return "Entendo que você está buscando informações sobre ansiedade. É importante lembrar que ela é uma reação normal ao estresse, mas pode se tornar um problema. Posso te ajudar com mais informações.";
+            } else if (message.includes('sintomas')) {
+                return "Os sintomas da ansiedade podem variar bastante, como preocupação excessiva, irritabilidade, palpitações e falta de ar. Se você quiser, posso te dar mais detalhes sobre cada um deles.";
+            } else if (message.includes('dicas') || message.includes('melhorar')) {
+                return "Para lidar com a ansiedade, é importante praticar técnicas de relaxamento, cuidar do seu bem-estar e buscar ajuda profissional se necessário. Posso te dar mais informações sobre isso.";
+            } else if (message.includes('ajuda')) {
+                return "Buscar ajuda profissional é fundamental se a ansiedade estiver te atrapalhando. Um psicólogo ou psiquiatra pode te ajudar a encontrar o melhor caminho. Posso te indicar alguns recursos.";
+            } else if (message.includes('relaxamento')) {
+                return "Técnicas como meditação e respiração diafragmática podem ajudar a acalmar a mente e o corpo. Você gostaria de aprender alguma delas?";
+             } else if (message.includes('o que é')) {
+                return "A ansiedade é uma reação ao estresse, preocupação e apreensão. É normal, mas em excesso pode se tornar um transtorno que precisa de atenção.";
+            }else if (message.includes('tipos')) {
+                return "Existem diferentes tipos de ansiedade, como a generalizada, a de pânico e as fobias. Cada uma tem suas características. Posso te explicar melhor se tiver interesse.";
+            }else {
+                return "Entendo sua preocupação, e quero que saiba que estou aqui para te apoiar. Embora eu não possa dar diagnósticos ou conselhos médicos, posso te oferecer informações e te direcionar para ajuda profissional. Como posso te ajudar agora?";
+            }
+        }
+    </script>
+</body>
+</html>

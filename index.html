@@ -17,6 +17,7 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            z-index: 1000; /* Garante que o chatbot fique acima de outros elementos */
         }
         .chatbot-button {
             background-color: #000;
@@ -54,6 +55,7 @@
             padding: 10px;
             text-align: center;
             border-bottom: 1px solid #ccc;
+            position: relative; /* Para posicionar o botão de fechar e limpar */
         }
         .chatbot-messages {
             padding: 10px;
@@ -68,7 +70,6 @@
             padding: 10px;
             border-top: 1px solid #ccc;
             align-items: center; /* Alinha verticalmente os itens */
-            /* Adicionado para garantir que os itens não se estiquem */
             flex-shrink: 0;
         }
         .chatbot-input {
@@ -77,8 +78,8 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             margin-right: 10px;
-            box-sizing: border-box; /* Garante que o padding não aumente a largura total */
-            min-width: 0;  /* Adicionado para evitar que o input se estique demais */
+            box-sizing: border-box;
+            min-width: 0;
         }
         .chatbot-send-button {
             background-color: #000;
@@ -87,8 +88,8 @@
             padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
-            white-space: nowrap; /* Impede que o texto do botão quebre */
-            flex-shrink: 0; /* Impede que o botão se estique */
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .chatbot-send-button:hover {
             background-color: #222;
@@ -113,6 +114,47 @@
             cursor: pointer;
             font-size: 20px;
             color: #fff;
+        }
+        .clear-chat-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #fff;
+            background-color: #333;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-weight: normal;
+        }
+        .clear-chat-button:hover {
+            background-color: #555;
+        }
+        .loading-dots {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #000;
+            animation: bounce 0.6s infinite alternate;
+            margin: 0 2px;
+        }
+
+        .loading-dots:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-5px);
+            }
         }
     </style>
 </head>
@@ -215,7 +257,7 @@
     </main>
 
     <footer class="bg-black text-white py-4 text-center rounded-t-md shadow-md">
-        <p>© 2025 CalmaMente. Criado por Aline Ometto - Imersão IA Alura. Todos os direitos reservados.</p>
+        <p>© 2024 CalmaMente. Criado por Aline Ometto - Imersão IA Alura. Todos os direitos reservados.</p>
         <p>Este site tem fins informativos e não substitui a avaliação de um profissional de saúde.</p>
     </footer>
 
@@ -226,6 +268,7 @@
         <div class="chatbot-window" id="chatbot-window">
             <div class="chatbot-header">
                 <span class="close-button" id="close-chatbot">&times;</span>
+                <span class="clear-chat-button" id="clear-chat-button">Limpar Chat</span>
                 Chatbot CalmaMente
             </div>
             <div class="chatbot-messages" id="chatbot-messages">
@@ -245,6 +288,20 @@
         const chatbotInput = document.getElementById('chatbot-input');
         const chatbotSendButton = document.getElementById('chatbot-send-button');
         const chatbotMessages = document.getElementById('chatbot-messages');
+        const clearChatButton = document.getElementById('clear-chat-button'); // Novo botão
+
+        // Variável para armazenar o histórico do chat
+        let chatHistory = [];
+        const initialBotMessage = 'Olá! Sou o chatbot CalmaMente. Estou aqui para te ajudar com informações e dicas sobre ansiedade. Como você está se sentindo hoje?';
+
+        // Função para adicionar a mensagem inicial do bot
+        function displayInitialBotMessage() {
+            chatbotMessages.innerHTML = `<div class="message bot-message">${initialBotMessage}</div>`;
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        // Exibe a mensagem inicial do bot ao carregar a página
+        displayInitialBotMessage();
 
         chatbotToggle.addEventListener('click', () => {
             chatbotWindow.style.display = chatbotWindow.style.display === 'none' ? 'flex' : 'none';
@@ -254,18 +311,78 @@
             chatbotWindow.style.display = 'none';
         });
 
-        chatbotSendButton.addEventListener('click', () => {
-            const message = chatbotInput.value;
-            if (message.trim() === '') return;
+        // Event listener para o novo botão "Limpar Chat"
+        clearChatButton.addEventListener('click', () => {
+            chatHistory = []; // Limpa o histórico
+            displayInitialBotMessage(); // Exibe a mensagem inicial do bot novamente
+        });
 
-            chatbotMessages.innerHTML += `<div class="message user-message">${message}</div>`;
+        chatbotSendButton.addEventListener('click', async () => {
+            const userMessage = chatbotInput.value.trim();
+            if (userMessage === '') return;
+
+            // Adiciona a mensagem do usuário ao histórico da UI
+            chatbotMessages.innerHTML += `<div class="message user-message">${userMessage}</div>`;
+            // Adiciona a mensagem do usuário ao histórico para a API
+            chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+            
             chatbotInput.value = '';
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
-            setTimeout(() => {
-                const response = getBotResponse(message);
-                chatbotMessages.innerHTML += `<div class="message bot-message">${response}</div>`;
-                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-            }, 500);
+            // Adiciona um indicador de carregamento
+            const loadingMessage = document.createElement('div');
+            loadingMessage.classList.add('message', 'bot-message');
+            loadingMessage.innerHTML = 'Digitando <span class="loading-dots"></span><span class="loading-dots"></span><span class="loading-dots"></span>';
+            chatbotMessages.appendChild(loadingMessage);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+            try {
+                const apiKey = ""; // A API Key é fornecida pelo ambiente do Canvas.
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const systemInstruction = 'Você é um assistente pessoal chamado CalmaMente que visa oferecer suporte para lidar com a ansiedade, engajando o usuário para identificar sintomas e contextos, inferir cautelosamente possíveis tipos e gatilhos de ansiedade, fornecer informações relevantes e dicas de relaxamento personalizadas, além de enfatizar a importância da ajuda profissional e orientar sobre como buscá-la, sempre mantendo uma postura empática e evitando diagnósticos. Você sempre utiliza linguagem simples, objetiva e acolhedora. E também, utiliza emoticons para transmitir positividade. O chatbot também é capaz de responder a perguntas relacionadas com o tema ansiedade, por exemplo, o que é ansiedade, quais os sintomas da ansiedade, como saber se estou ansioso (a)?';
+
+                // Prepara o conteúdo a ser enviado para a API, incluindo o histórico
+                const contentsToSend = [];
+                // Adiciona a instrução do sistema ao primeiro turno da conversa
+                contentsToSend.push({ role: "user", parts: [{ text: systemInstruction + "\n" + chatHistory[0].parts[0].text }] });
+                // Adiciona o restante do histórico
+                for (let i = 1; i < chatHistory.length; i++) {
+                    contentsToSend.push(chatHistory[i]);
+                }
+
+                const payload = {
+                    contents: contentsToSend
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                // Remove o indicador de carregamento
+                chatbotMessages.removeChild(loadingMessage);
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const botResponse = result.candidates[0].content.parts[0].text;
+                    chatbotMessages.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
+                    // Adiciona a resposta do bot ao histórico para a API
+                    chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+                } else {
+                    chatbotMessages.innerHTML += `<div class="message bot-message">Desculpe, não consegui gerar uma resposta. Por favor, tente novamente.</div>`;
+                }
+            } catch (error) {
+                console.error('Erro ao chamar a API do Gemini:', error);
+                // Remove o indicador de carregamento em caso de erro
+                chatbotMessages.removeChild(loadingMessage);
+                chatbotMessages.innerHTML += `<div class="message bot-message">Ocorreu um erro ao processar sua solicitação. Por favor, tente mais tarde.</div>`;
+            }
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         });
 
         chatbotInput.addEventListener('keydown', (event) => {
@@ -273,27 +390,6 @@
                 chatbotSendButton.click();
             }
         });
-
-        function getBotResponse(message) {
-            message = message.toLowerCase();
-            if (message.includes('ansiedade')) {
-                return "Entendo que você está buscando informações sobre ansiedade. É importante lembrar que ela é uma reação normal ao estresse, mas pode se tornar um problema. Posso te ajudar com mais informações.";
-            } else if (message.includes('sintomas')) {
-                return "Os sintomas da ansiedade podem variar bastante, como preocupação excessiva, irritabilidade, palpitações e falta de ar. Se você quiser, posso te dar mais detalhes sobre cada um deles.";
-            } else if (message.includes('dicas') || message.includes('melhorar')) {
-                return "Para lidar com a ansiedade, é importante praticar técnicas de relaxamento, cuidar do seu bem-estar e buscar ajuda profissional se necessário. Posso te dar mais informações sobre isso.";
-            } else if (message.includes('ajuda')) {
-                return "Buscar ajuda profissional é fundamental se a ansiedade estiver te atrapalhando. Um psicólogo ou psiquiatra pode te ajudar a encontrar o melhor caminho. Posso te indicar alguns recursos.";
-            } else if (message.includes('relaxamento')) {
-                return "Técnicas como meditação e respiração diafragmática podem ajudar a acalmar a mente e o corpo. Você gostaria de aprender alguma delas?";
-            } else if (message.includes('o que é')) {
-                return "A ansiedade é uma reação ao estresse, preocupação e apreensão. É normal, mas em excesso pode se tornar um transtorno que precisa de atenção.";
-            } else if (message.includes('tipos')) {
-                return "Existem diferentes tipos de ansiedade, como a generalizada, a de pânico e as fobias. Cada uma tem suas características. Posso te explicar melhor se tiver interesse.";
-            } else {
-                return "Entendo sua preocupação, e quero que saiba que estou aqui para te apoiar. Embora eu não possa dar diagnósticos ou conselhos médicos, posso te oferecer informações e te direcionar para ajuda profissional. Como posso te ajudar agora?";
-            }
-        }
     </script>
 </body>
 </html>

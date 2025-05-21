@@ -44,7 +44,7 @@
             width: 300px;
             height: 400px;
             overflow: hidden;
-            display: none;
+            display: flex; /* Alterado para flex */
             flex-direction: column;
             justify-content: space-between;
             border: 1px solid #ccc;
@@ -53,9 +53,11 @@
             background-color: #000;
             color: #fff;
             padding: 10px;
-            text-align: center;
+            display: flex; /* Usa flexbox para alinhar os itens */
+            align-items: center; /* Alinha verticalmente no centro */
+            justify-content: flex-end; /* Alinha o conteúdo à direita */
             border-bottom: 1px solid #ccc;
-            position: relative; /* Para posicionar o botão de fechar e limpar */
+            /* Removido position: relative; e text-align: center; pois flexbox fará o trabalho */
         }
         .chatbot-messages {
             padding: 10px;
@@ -69,7 +71,7 @@
             display: flex;
             padding: 10px;
             border-top: 1px solid #ccc;
-            align-items: center; /* Alinha verticalmente os itens */
+            align-items: center;
             flex-shrink: 0;
         }
         .chatbot-input {
@@ -107,18 +109,14 @@
             background-color: #f0f0f0;
             align-self: flex-start;
         }
+        /* Removido position: absolute; de close-button e clear-chat-button */
         .close-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             cursor: pointer;
             font-size: 20px;
             color: #fff;
+            margin-left: 8px; /* Espaçamento entre o botão Limpar Chat e o X */
         }
         .clear-chat-button {
-            position: absolute;
-            top: 10px;
-            left: 10px;
             cursor: pointer;
             font-size: 14px;
             color: #fff;
@@ -126,35 +124,10 @@
             padding: 5px 8px;
             border-radius: 5px;
             font-weight: normal;
+            margin-left: 8px; /* Espaçamento entre CalmaMente e Limpar Chat */
         }
         .clear-chat-button:hover {
             background-color: #555;
-        }
-        .loading-dots {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #000;
-            animation: bounce 0.6s infinite alternate;
-            margin: 0 2px;
-        }
-
-        .loading-dots:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .loading-dots:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes bounce {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-5px);
-            }
         }
     </style>
 </head>
@@ -267,13 +240,13 @@
         </button>
         <div class="chatbot-window" id="chatbot-window">
             <div class="chatbot-header">
-                <span class="close-button" id="close-chatbot">&times;</span>
+                <div class="flex-grow"></div>
+                <span class="text-white font-semibold mr-2">CalmaMente</span>
                 <span class="clear-chat-button" id="clear-chat-button">Limpar Chat</span>
-                Chatbot CalmaMente
+                <span class="close-button ml-2" id="close-chatbot">&times;</span>
             </div>
             <div class="chatbot-messages" id="chatbot-messages">
-                <div class="message bot-message">Olá! Sou o chatbot CalmaMente. Estou aqui para te ajudar com informações e dicas sobre ansiedade. Como você está se sentindo hoje?</div>
-            </div>
+                </div>
             <div class="chatbot-input-area">
                 <input type="text" id="chatbot-input" class="chatbot-input" placeholder="Digite sua mensagem...">
                 <button id="chatbot-send-button" class="chatbot-send-button">Enviar</button>
@@ -288,15 +261,19 @@
         const chatbotInput = document.getElementById('chatbot-input');
         const chatbotSendButton = document.getElementById('chatbot-send-button');
         const chatbotMessages = document.getElementById('chatbot-messages');
-        const clearChatButton = document.getElementById('clear-chat-button'); // Novo botão
+        const clearChatButton = document.getElementById('clear-chat-button');
 
-        // Variável para armazenar o histórico do chat
-        let chatHistory = [];
-        const initialBotMessage = 'Olá! Sou o chatbot CalmaMente. Estou aqui para te ajudar com informações e dicas sobre ansiedade. Como você está se sentindo hoje?';
+        // Variável para armazenar o histórico do chat (para exibição na UI)
+        let chatHistoryUI = [];
 
-        // Função para adicionar a mensagem inicial do bot
+        const initialBotMessage = "Sou o chatbot CalmaMente, o seu assistente pessoal para ajudar a lidar com a ansiedade. Como posso ajudá-lo hoje? ☀️";
+        const professionalHelpMessage = "Lembre-se, se a ansiedade estiver prejudicando seu dia a dia, é muito importante procurar ajuda profissional. Você também pode entrar em contato com o CVV (Centro de Valorização da Vida) pelo telefone 188 ou visitar o site <a href='https://www.cvv.org.br/' target='_blank' rel='noopener noreferrer' class='text-blue-500 hover:underline'>www.cvv.org.br</a>. ";
+        const positiveEmoticon = " ☀️"; // Emoticon de positividade
+
+        // Função para adicionar a mensagem inicial do bot e limpar a UI
         function displayInitialBotMessage() {
             chatbotMessages.innerHTML = `<div class="message bot-message">${initialBotMessage}</div>`;
+            chatHistoryUI = [{ role: "bot", text: initialBotMessage }]; // Reinicia o histórico da UI
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
         }
 
@@ -313,76 +290,28 @@
 
         // Event listener para o novo botão "Limpar Chat"
         clearChatButton.addEventListener('click', () => {
-            chatHistory = []; // Limpa o histórico
-            displayInitialBotMessage(); // Exibe a mensagem inicial do bot novamente
+            displayInitialBotMessage(); // Limpa a UI e exibe a mensagem inicial
         });
 
-        chatbotSendButton.addEventListener('click', async () => {
+        chatbotSendButton.addEventListener('click', () => {
             const userMessage = chatbotInput.value.trim();
             if (userMessage === '') return;
 
-            // Adiciona a mensagem do usuário ao histórico da UI
+            // Adiciona a mensagem do usuário ao histórico da UI e exibe
             chatbotMessages.innerHTML += `<div class="message user-message">${userMessage}</div>`;
-            // Adiciona a mensagem do usuário ao histórico para a API
-            chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
-            
+            chatHistoryUI.push({ role: "user", text: userMessage });
             chatbotInput.value = '';
             chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 
-            // Adiciona um indicador de carregamento
-            const loadingMessage = document.createElement('div');
-            loadingMessage.classList.add('message', 'bot-message');
-            loadingMessage.innerHTML = 'Digitando <span class="loading-dots"></span><span class="loading-dots"></span><span class="loading-dots"></span>';
-            chatbotMessages.appendChild(loadingMessage);
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-
-            try {
-                const apiKey = ""; // A API Key é fornecida pelo ambiente do Canvas.
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const systemInstruction = 'Você é um assistente pessoal chamado CalmaMente que visa oferecer suporte para lidar com a ansiedade, engajando o usuário para identificar sintomas e contextos, inferir cautelosamente possíveis tipos e gatilhos de ansiedade, fornecer informações relevantes e dicas de relaxamento personalizadas, além de enfatizar a importância da ajuda profissional e orientar sobre como buscá-la, sempre mantendo uma postura empática e evitando diagnósticos. Você sempre utiliza linguagem simples, objetiva e acolhedora. E também, utiliza emoticons para transmitir positividade. O chatbot também é capaz de responder a perguntas relacionadas com o tema ansiedade, por exemplo, o que é ansiedade, quais os sintomas da ansiedade, como saber se estou ansioso (a)?';
-
-                // Prepara o conteúdo a ser enviado para a API, incluindo o histórico
-                const contentsToSend = [];
-                // Adiciona a instrução do sistema ao primeiro turno da conversa
-                contentsToSend.push({ role: "user", parts: [{ text: systemInstruction + "\n" + chatHistory[0].parts[0].text }] });
-                // Adiciona o restante do histórico
-                for (let i = 1; i < chatHistory.length; i++) {
-                    contentsToSend.push(chatHistory[i]);
-                }
-
-                const payload = {
-                    contents: contentsToSend
-                };
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
-                // Remove o indicador de carregamento
-                chatbotMessages.removeChild(loadingMessage);
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const botResponse = result.candidates[0].content.parts[0].text;
-                    chatbotMessages.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
-                    // Adiciona a resposta do bot ao histórico para a API
-                    chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
-                } else {
-                    chatbotMessages.innerHTML += `<div class="message bot-message">Desculpe, não consegui gerar uma resposta. Por favor, tente novamente.</div>`;
-                }
-            } catch (error) {
-                console.error('Erro ao chamar a API do Gemini:', error);
-                // Remove o indicador de carregamento em caso de erro
-                chatbotMessages.removeChild(loadingMessage);
-                chatbotMessages.innerHTML += `<div class="message bot-message">Ocorreu um erro ao processar sua solicitação. Por favor, tente mais tarde.</div>`;
-            }
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            // Gera a resposta estática do bot
+            const botResponse = getStaticBotResponse(userMessage);
+            
+            // Adiciona a resposta do bot ao histórico da UI e exibe
+            setTimeout(() => {
+                chatbotMessages.innerHTML += `<div class="message bot-message">${botResponse}</div>`;
+                chatHistoryUI.push({ role: "bot", text: botResponse });
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }, 500); // Pequeno atraso para simular "digitação"
         });
 
         chatbotInput.addEventListener('keydown', (event) => {
@@ -390,6 +319,48 @@
                 chatbotSendButton.click();
             }
         });
+
+        // Função para gerar respostas estáticas do bot
+        function getStaticBotResponse(message) {
+            message = message.toLowerCase();
+            let response = "";
+
+            // Adicionado para capturar sentimentos
+            if (message.includes('estou feliz') || message.includes('estou triste') || message.includes('estou com raiva') ||
+                message.includes('estou chateado') || message.includes('estou chateada') || message.includes('estou bravo') ||
+                message.includes('estou brava') || message.includes('estou bem') || message.includes('estou mal') ||
+                message.includes('estou cansado') || message.includes('estou cansada')) {
+                response = "Obrigado por compartilhar! Lembre-se que estou aqui para oferecer informações gerais e apoio. Se precisar de ajuda mais específica ou sentir que a ansiedade está afetando seu dia a dia, é fundamental buscar um profissional de saúde. Como posso ajudá-lo?"; // Adicionado aspas duplas de fechamento
+            } else if (message.includes('olá') || message.includes('oi') || message.includes('bom dia') || message.includes('boa tarde') || message.includes('boa noite')) {
+                response = "Olá! Sou o chatbot CalmaMente, o seu assistente pessoal para ajudar a lidar com a ansiedade. Como posso ajudá-lo hoje?";
+            } else if (message.includes('o que é ansiedade')) {
+                response = "A ansiedade é uma reação natural do corpo ao estresse, uma sensação de medo ou apreensão sobre o que está por vir. É uma emoção normal, mas quando se torna excessiva e persistente, pode indicar um transtorno.";
+            } else if (message.includes('sintomas')) {
+                response = "Os sintomas da ansiedade podem ser físicos, como coração acelerado, falta de ar, suores, tremores, ou mentais, como preocupação excessiva, dificuldade de concentração e irritabilidade. É importante observar como você se sente.";
+            } else if (message.includes('como saber se estou ansioso') || message.includes('estou ansioso') || message.includes('ansiosa')) {
+                response = "Se você tem sentido preocupação constante, dificuldade para relaxar, tensão muscular, problemas para dormir ou irritabilidade, pode ser que esteja experimentando ansiedade. Observar esses sinais é o primeiro passo.";
+            } else if (message.includes('dicas') || message.includes('melhorar') || message.includes('autocuidado')) {
+                response = "Para lidar com a ansiedade, algumas dicas de autocuidado incluem praticar técnicas de relaxamento como a respiração profunda, manter uma rotina saudável de sono e alimentação, e buscar atividades que te deem prazer. Pequenas mudanças podem fazer uma grande diferença.";
+            } else if (message.includes('meditação') || message.includes('exercícios de meditação') || message.includes('relaxamento') || message.includes('meditar')) {
+                response = "A meditação é uma ótima ferramenta para acalmar a mente. Você pode tentar focar na sua respiração, observando o ar entrar e sair. Existem muitos apps e vídeos que guiam meditações para iniciantes. Que tal experimentar?";
+            } else if (message.includes('ajuda profissional') || message.includes('psicologo') || message.includes('psiquiatra') || message.includes('ajuda médica') || message.includes('ajuda')) {
+                response = "Buscar ajuda profissional é um passo muito corajoso e importante. Um psicólogo ou psiquiatra pode te oferecer o suporte e as ferramentas necessárias para lidar com a ansiedade de forma eficaz. Não hesite em procurar!";
+            } else {
+                // Resposta para mensagens não reconhecidas, sem a menção ao CVV aqui.
+                response = "Não entendi a sua mensagem. Posso te falar sobre os sintomas da ansiedade, ou dar dicas de relaxamento e autocuidado. O que você gostaria de saber?";
+            }
+            
+            // Adiciona a mensagem de ajuda profissional e o emoticon no final, se não for a resposta inicial
+            if (response !== initialBotMessage) {
+                // Garante que a mensagem de ajuda profissional seja adicionada apenas uma vez e não na resposta "Não entendi"
+                // ou na nova resposta de sentimentos, que já a inclui.
+                if (!response.includes("procurar ajuda profissional") && !response.includes("CVV") && !response.includes("fundamental buscar um profissional") && !response.includes("Não entendi a sua mensagem")) {
+                    response += " " + professionalHelpMessage;
+                }
+                response += positiveEmoticon;
+            }
+            return response;
+        }
     </script>
 </body>
 </html>
